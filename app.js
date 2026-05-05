@@ -6,10 +6,10 @@ const session = require("express-session");
 const nodemailer = require("nodemailer");
 
 const app = express();
-
 const db = require("./db");
 
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
 
 app.use(session({
     secret: "ctis256-secret",
@@ -212,12 +212,32 @@ app.post("/auth/login", async (req, res) => {
     }
 });
 
+app.get("/products", async (req, res) => {
+    try {
+        const [products] = await db.query(
+            `SELECT products.*, users.market_name, users.city, users.district
+             FROM products
+             JOIN users ON products.market_id = users.id
+             WHERE products.expiration_date >= CURDATE()
+             ORDER BY products.expiration_date ASC`
+        );
+
+        res.render("products/index", {
+            products: products
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.send("Error loading products");
+    }
+});
+
 app.get("/profile", (req, res) => {
     if (!req.session.user) {
         return res.redirect("/auth/login");
     }
 
-    res.send(`Welcome ${req.session.user.email}`);
+    res.send(`Welcome ${req.session.user.email}<br><br><a href="/products">View Products</a>`);
 });
 
 app.get("/market-dashboard", (req, res) => {
@@ -229,7 +249,7 @@ app.get("/market-dashboard", (req, res) => {
         return res.send("Access denied");
     }
 
-    res.send(`Welcome market user: ${req.session.user.email}`);
+    res.send(`Welcome market user: ${req.session.user.email}<br><br><a href="/products">View Products</a>`);
 });
 
 app.get("/auth/logout", (req, res) => {
@@ -241,5 +261,3 @@ app.get("/auth/logout", (req, res) => {
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
 });
-
-
