@@ -17,5 +17,14 @@
   "bugs": {
     "url": "https://github.com/UKarimli007/CTIS256-marketProject/issues"
   },
-  "homepage": "https://github.com/UKarimli007/CTIS256-marketProject#readme"
+  "homepage": "https://github.com/UKarimli007/CTIS256-marketProject#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "ejs": "^5.0.2",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "mysql2": "^3.22.3",
+    "nodemailer": "^8.0.7"
+  }
 }
