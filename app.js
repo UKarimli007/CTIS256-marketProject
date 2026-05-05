@@ -38,6 +38,31 @@ app.post("/auth/register", async (req, res) => {
     }
 });
 
+app.get("/auth/login", (req, res) => {
+    res.render("auth/login");
+  });
+  
+app.post("/auth/login", async (req, res) => {
+    const email = req.body.email;
+    const password = req.body.password;
+  
+    try {
+        const [rows] = await db.query(
+            "SELECT * FROM users WHERE email = ? AND password_hash = ?",
+            [email, password]
+        );
+  
+        if (rows.length > 0) {
+            res.send("Login successful");
+        } else {
+            res.send("Invalid email or password");
+        }
+    } catch (err) {
+        console.error(err);
+        res.send("Error logging in");
+    }
+});
+  
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
 })
