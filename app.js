@@ -1,6 +1,9 @@
+require("dotenv").config();
+
 const express = require("express");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
+const nodemailer = require("nodemailer");
 
 const app = express();
 
@@ -15,6 +18,14 @@ app.use(session({
 }));
 
 app.set("view engine", "ejs");
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 app.get("/test-db", async (req, res) => {
     try {
@@ -38,7 +49,23 @@ app.post("/auth/register", async (req, res) => {
     const city = req.body.city;
     const district = req.body.district;
 
+    const form = { role, name, email, city, district };
+
     try {
+        if (!role || !name || !email || !password || !city || !district) {
+            return res.render("auth/register", {
+                error: "Please fill in all fields",
+                form: form
+            });
+        }
+
+        if (password.length < 4) {
+            return res.render("auth/register", {
+                error: "Password must be at least 4 characters",
+                form: form
+            });
+        }
+
         const [existingUser] = await db.query(
             "SELECT * FROM users WHERE email = ?",
             [email]
@@ -46,7 +73,8 @@ app.post("/auth/register", async (req, res) => {
 
         if (existingUser.length > 0) {
             return res.render("auth/register", {
-                error: "This email is already registered"
+                error: "This email is already registered",
+                form: form
             });
         }
 
@@ -69,15 +97,23 @@ app.post("/auth/register", async (req, res) => {
             [email, hashedPassword, role, fullName, marketName, city, district, code]
         );
 
+        await transporter.sendMail({
+            from: process.env.EMAIL_USER,
+            to: email,
+            subject: "Email Verification Code",
+            text: `Your verification code is: ${code}`
+        });
+
         res.render("auth/verify", {
             email: email,
-            error: "Your verification code is: " + code
+            message: "Verification code was sent to your email"
         });
 
     } catch (err) {
         console.error(err);
         res.render("auth/register", {
-            error: "Error registering user"
+            error: "Error registering user",
+            form: form
         });
     }
 });

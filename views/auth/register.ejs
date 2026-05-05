@@ -15,24 +15,24 @@
 
     <label>Role:</label><br>
     <select name="role" required>
-        <option value="consumer">Consumer</option>
-        <option value="market">Market</option>
+        <option value="consumer" <%= typeof form !== 'undefined' && form.role === 'consumer' ? 'selected' : '' %>>Consumer</option>
+        <option value="market" <%= typeof form !== 'undefined' && form.role === 'market' ? 'selected' : '' %>>Market</option>
     </select><br><br>
 
     <label>Full Name / Market Name:</label><br>
-    <input type="text" name="name" required><br><br>
+    <input type="text" name="name" value="<%= typeof form !== 'undefined' ? form.name : '' %>" required><br><br>
 
     <label>Email:</label><br>
-    <input type="email" name="email" required><br><br>
+    <input type="email" name="email" value="<%= typeof form !== 'undefined' ? form.email : '' %>" required><br><br>
 
     <label>Password:</label><br>
     <input type="password" name="password" required><br><br>
 
     <label>City:</label><br>
-    <input type="text" name="city" required><br><br>
+    <input type="text" name="city" value="<%= typeof form !== 'undefined' ? form.city : '' %>" required><br><br>
 
     <label>District:</label><br>
-    <input type="text" name="district" required><br><br>
+    <input type="text" name="district" value="<%= typeof form !== 'undefined' ? form.district : '' %>" required><br><br>
 
     <button type="submit">Register</button>
 
