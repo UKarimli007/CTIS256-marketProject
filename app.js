@@ -1,4 +1,6 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
+
 const app = express();
 
 const db = require("./db");
@@ -26,9 +28,11 @@ app.post("/auth/register", async (req, res) => {
     const password = req.body.password;
 
     try {
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         await db.query(
             "INSERT INTO users (email, password_hash, is_verified, role) VALUES (?, ?, 0, 'consumer')",
-            [email, password]
+            [email, hashedPassword]
         );
 
         res.send("User registered successfully");
@@ -40,19 +44,27 @@ app.post("/auth/register", async (req, res) => {
 
 app.get("/auth/login", (req, res) => {
     res.render("auth/login");
-  });
-  
+});
+
 app.post("/auth/login", async (req, res) => {
     const email = req.body.email;
     const password = req.body.password;
-  
+
     try {
         const [rows] = await db.query(
-            "SELECT * FROM users WHERE email = ? AND password_hash = ?",
-            [email, password]
+            "SELECT * FROM users WHERE email = ?",
+            [email]
         );
-  
-        if (rows.length > 0) {
+
+        if (rows.length === 0) {
+            return res.send("Invalid email or password");
+        }
+
+        const user = rows[0];
+
+        const match = await bcrypt.compare(password, user.password_hash);
+
+        if (match) {
             res.send("Login successful");
         } else {
             res.send("Invalid email or password");
@@ -62,7 +74,7 @@ app.post("/auth/login", async (req, res) => {
         res.send("Error logging in");
     }
 });
-  
+
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
-})
+});
