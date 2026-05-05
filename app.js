@@ -51,29 +51,70 @@ app.post("/auth/register", async (req, res) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+        const code = Math.floor(100000 + Math.random() * 900000).toString();
 
         let fullName = null;
         let marketName = null;
 
         if (role === "consumer") {
             fullName = name;
-        } else if (role === "market") {
+        } else {
             marketName = name;
         }
 
         await db.query(
             `INSERT INTO users 
-            (email, password_hash, role, is_verified, full_name, market_name, city, district)
-            VALUES (?, ?, ?, 0, ?, ?, ?, ?)`,
-            [email, hashedPassword, role, fullName, marketName, city, district]
+            (email, password_hash, role, is_verified, full_name, market_name, city, district, verification_code)
+            VALUES (?, ?, ?, 0, ?, ?, ?, ?, ?)`,
+            [email, hashedPassword, role, fullName, marketName, city, district, code]
+        );
+
+        res.render("auth/verify", {
+            email: email,
+            error: "Your verification code is: " + code
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.render("auth/register", {
+            error: "Error registering user"
+        });
+    }
+});
+
+app.get("/auth/verify", (req, res) => {
+    res.render("auth/verify");
+});
+
+app.post("/auth/verify", async (req, res) => {
+    const email = req.body.email;
+    const code = req.body.code;
+
+    try {
+        const [rows] = await db.query(
+            "SELECT * FROM users WHERE email = ? AND verification_code = ?",
+            [email, code]
+        );
+
+        if (rows.length === 0) {
+            return res.render("auth/verify", {
+                email: email,
+                error: "Invalid verification code"
+            });
+        }
+
+        await db.query(
+            "UPDATE users SET is_verified = 1, verification_code = NULL WHERE email = ?",
+            [email]
         );
 
         res.redirect("/auth/login");
 
     } catch (err) {
         console.error(err);
-        res.render("auth/register", {
-            error: "Error registering user"
+        res.render("auth/verify", {
+            email: email,
+            error: "Error verifying email"
         });
     }
 });
@@ -105,6 +146,13 @@ app.post("/auth/login", async (req, res) => {
         if (!match) {
             return res.render("auth/login", {
                 error: "Invalid email or password"
+            });
+        }
+
+        if (user.is_verified === 0) {
+            return res.render("auth/verify", {
+                email: user.email,
+                error: "Please verify your email first"
             });
         }
 
