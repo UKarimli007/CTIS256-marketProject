@@ -3,13 +3,47 @@ const app = express();
 
 const db = require("./db");
 
+app.use(express.urlencoded({ extended: true }));
+
 app.get("/test-db", async (req, res) => {
+    try {
+        const [rows] = await db.query("SELECT 1 + 1 AS result");
+        res.send(`Database working: ${rows[0].result}`);
+    } catch (err) {
+        console.error(err);
+        res.send("Database error");
+    }
+});
+
+app.get("/auth/register", (req, res) => {
+    res.send(`
+        <h2>Register</h2>
+        <form method="POST" action="/auth/register">
+            <label>Username:</label><br>
+            <input type="text" name="username" required><br><br>
+
+            <label>Password:</label><br>
+            <input type="password" name="password" required><br><br>
+
+            <button type="submit">Register</button>
+        </form>
+    `);
+});
+
+app.post("/auth/register", async (req, res) => {
+  const email = req.body.username;
+  const password = req.body.password;
+
   try {
-    const [rows] = await db.query("SELECT 1 + 1 AS result");
-    res.send(`Database working: ${rows[0].result}`);
+    await db.query(
+      "INSERT INTO users (email, password_hash, is_verified, role) VALUES (?, ?, 0, 'consumer')",
+      [email, password]
+  );
+    res.send("User registered successfully");
+    
   } catch (err) {
     console.error(err);
-    res.send("Database error");
+    res.send("Error registering user");
   }
 });
 
