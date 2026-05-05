@@ -5,6 +5,8 @@ const db = require("./db");
 
 app.use(express.urlencoded({ extended: true }));
 
+app.set("view engine", "ejs");
+
 app.get("/test-db", async (req, res) => {
     try {
         const [rows] = await db.query("SELECT 1 + 1 AS result");
@@ -16,37 +18,26 @@ app.get("/test-db", async (req, res) => {
 });
 
 app.get("/auth/register", (req, res) => {
-    res.send(`
-        <h2>Register</h2>
-        <form method="POST" action="/auth/register">
-            <label>Username:</label><br>
-            <input type="text" name="username" required><br><br>
-
-            <label>Password:</label><br>
-            <input type="password" name="password" required><br><br>
-
-            <button type="submit">Register</button>
-        </form>
-    `);
+    res.render("auth/register");
 });
 
 app.post("/auth/register", async (req, res) => {
-  const email = req.body.username;
-  const password = req.body.password;
+    const email = req.body.username;
+    const password = req.body.password;
 
-  try {
-    await db.query(
-      "INSERT INTO users (email, password_hash, is_verified, role) VALUES (?, ?, 0, 'consumer')",
-      [email, password]
-  );
-    res.send("User registered successfully");
-    
-  } catch (err) {
-    console.error(err);
-    res.send("Error registering user");
-  }
+    try {
+        await db.query(
+            "INSERT INTO users (email, password_hash, is_verified, role) VALUES (?, ?, 0, 'consumer')",
+            [email, password]
+        );
+
+        res.send("User registered successfully");
+    } catch (err) {
+        console.error(err);
+        res.send("Error registering user");
+    }
 });
 
 app.listen(3000, () => {
-  console.log("Server running on http://localhost:3000");
-});
+    console.log("Server running on http://localhost:3000");
+})
