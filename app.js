@@ -1,11 +1,18 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const session = require("express-session");
 
 const app = express();
 
 const db = require("./db");
 
 app.use(express.urlencoded({ extended: true }));
+
+app.use(session({
+    secret: "ctis256-secret",
+    resave: false,
+    saveUninitialized: false
+}));
 
 app.set("view engine", "ejs");
 
@@ -65,6 +72,12 @@ app.post("/auth/login", async (req, res) => {
         const match = await bcrypt.compare(password, user.password_hash);
 
         if (match) {
+            req.session.user = {
+                id: user.id,
+                email: user.email,
+                role: user.role
+            };
+
             res.send("Login successful");
         } else {
             res.send("Invalid email or password");
@@ -73,6 +86,20 @@ app.post("/auth/login", async (req, res) => {
         console.error(err);
         res.send("Error logging in");
     }
+});
+
+app.get("/profile", (req, res) => {
+    if (!req.session.user) {
+        return res.send("You must login first");
+    }
+
+    res.send(`Welcome ${req.session.user.email}`);
+});
+
+app.get("/auth/logout", (req, res) => {
+    req.session.destroy(() => {
+        res.send("Logged out successfully");
+    });
 });
 
 app.listen(3000, () => {
