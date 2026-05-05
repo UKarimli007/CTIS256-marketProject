@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Product Detail</title>
+</head>
+<body>
+
+<h2>Product Detail</h2>
+
+<a href="/products">Back to Products</a>
+<br><br>
+
+<div style="border:1px solid #ccc; padding:20px;">
+
+    <h3><%= product.title %></h3>
+
+    <p><strong>Market:</strong> <%= product.market_name %></p>
+    <p><strong>Location:</strong> <%= product.city %> / <%= product.district %></p>
+
+    <p><strong>Stock:</strong> <%= product.stock %></p>
+
+    <p>
+        <strong>Normal Price:</strong>
+        <del><%= product.normal_price %> TL</del>
+    </p>
+
+    <p>
+        <strong>Discounted Price:</strong>
+        <%= product.discounted_price %> TL
+    </p>
+
+    <p>
+        <strong>Expiration Date:</strong>
+        <%= product.expiration_date.toISOString().slice(0,10) %>
+    </p>
+
+</div>
+
+</body>
+</html>

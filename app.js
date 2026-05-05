@@ -232,6 +232,32 @@ app.get("/products", async (req, res) => {
     }
 });
 
+app.get("/products/:id", async (req, res) => {
+    const productId = req.params.id;
+
+    try {
+        const [rows] = await db.query(
+            `SELECT products.*, users.market_name, users.city, users.district
+             FROM products
+             JOIN users ON products.market_id = users.id
+             WHERE products.id = ?`,
+            [productId]
+        );
+
+        if (rows.length === 0) {
+            return res.send("Product not found");
+        }
+
+        res.render("products/detail", {
+            product: rows[0]
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.send("Error loading product details");
+    }
+});
+
 app.get("/profile", (req, res) => {
     if (!req.session.user) {
         return res.redirect("/auth/login");
