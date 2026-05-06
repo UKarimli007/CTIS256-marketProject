@@ -496,6 +496,69 @@ app.get("/auth/logout", (req, res) => {
     });
 });
 
+app.post("/cart/add/:productId", async (req, res) => {
+    if (!req.session.user || req.session.user.role !== "consumer") {
+        return res.redirect("/auth/login");
+    }
+
+    const consumerId = req.session.user.id;
+    const productId = req.params.productId;
+
+    try {
+        await pool.query(
+            `INSERT INTO cart_items (consumer_id, product_id, quantity)
+             VALUES (?, ?, 1)
+             ON DUPLICATE KEY UPDATE quantity = quantity + 1`,
+            [consumerId, productId]
+        );
+
+        res.redirect("/cart");
+    } catch (err) {
+        console.error(err);
+        res.send("Error adding product to cart");
+    }
+});
+
+app.get("/cart", async (req, res) => {
+    if (!req.session.user || req.session.user.role !== "consumer") {
+        return res.redirect("/auth/login");
+    }
+
+    const consumerId = req.session.user.id;
+
+    try {
+        const [cartItems] = await pool.query(
+            `SELECT 
+                ci.id AS cart_id,
+                ci.quantity,
+                p.id AS product_id,
+                p.title,
+                p.discounted_price,
+                p.image,
+                (ci.quantity * p.discounted_price) AS total_price
+             FROM cart_items ci
+             JOIN products p ON ci.product_id = p.id
+             WHERE ci.consumer_id = ?`,
+            [consumerId]
+        );
+
+        let grandTotal = 0;
+
+        cartItems.forEach(item => {
+            grandTotal += Number(item.total_price);
+        });
+
+        res.render("cart", {
+            cartItems,
+            grandTotal
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.send("Error loading cart");
+    }
+});
+
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
 });
