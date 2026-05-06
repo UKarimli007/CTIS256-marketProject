@@ -2,6 +2,19 @@
 <html>
 <head>
     <title>Edit Profile</title>
+    <script>
+        function validateForm() {
+            const name = document.forms["editForm"]["name"].value;
+            const city = document.forms["editForm"]["city"].value;
+            const district = document.forms["editForm"]["district"].value;
+
+            if (!name || !city || !district) {
+                alert("All fields must be filled out");
+                return false;
+            }
+            return true;
+        }
+    </script>
 </head>
 <body>
 
@@ -14,7 +27,7 @@
     <p style="color:red;"><%= error %></p>
 <% } %>
 
-<form method="POST" action="/profile/edit">
+<form name="editForm" method="POST" action="/profile/edit" onsubmit="return validateForm()">
 
     <label>Email:</label><br>
     <input type="email" value="<%= userData.email %>" disabled><br><br>
