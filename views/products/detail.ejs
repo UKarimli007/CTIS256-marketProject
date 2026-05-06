@@ -14,6 +14,11 @@
 
     <h3><%= product.title %></h3>
 
+    <% if (product.image) { %>
+        <img src="/uploads/<%= product.image %>" width="250">
+        <br><br>
+    <% } %>
+
     <p><strong>Market:</strong> <%= product.market_name %></p>
     <p><strong>Location:</strong> <%= product.city %> / <%= product.district %></p>
 

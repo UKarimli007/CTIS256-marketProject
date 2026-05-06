@@ -4,9 +4,22 @@ const express = require("express");
 const bcrypt = require("bcrypt");
 const session = require("express-session");
 const nodemailer = require("nodemailer");
+const multer = require("multer");
+const path = require("path");
 
 const app = express();
 const db = require("./db");
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, "public/uploads");
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + path.extname(file.originalname));
+    }
+});
+
+const upload = multer({ storage: storage });
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
@@ -258,6 +271,79 @@ app.get("/products/:id", async (req, res) => {
     }
 });
 
+app.get("/market/products/add", (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/auth/login");
+    }
+
+    if (req.session.user.role !== "market") {
+        return res.send("Access denied");
+    }
+
+    res.render("products/add", {
+        error: null,
+        form: {}
+    });
+});
+
+app.post("/market/products/add", upload.single("image"), async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/auth/login");
+    }
+
+    if (req.session.user.role !== "market") {
+        return res.send("Access denied");
+    }
+
+    const title = req.body.title;
+    const stock = req.body.stock;
+    const normalPrice = req.body.normal_price;
+    const discountedPrice = req.body.discounted_price;
+    const expirationDate = req.body.expiration_date;
+    const image = req.file ? req.file.filename : null;
+
+    const form = {
+        title,
+        stock,
+        normal_price: normalPrice,
+        discounted_price: discountedPrice,
+        expiration_date: expirationDate
+    };
+
+    try {
+        if (!title || !stock || !normalPrice || !discountedPrice || !expirationDate) {
+            return res.render("products/add", {
+                error: "Please fill in all required fields",
+                form: form
+            });
+        }
+
+        await db.query(
+            `INSERT INTO products 
+            (market_id, title, stock, normal_price, discounted_price, expiration_date, image)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [
+                req.session.user.id,
+                title,
+                stock,
+                normalPrice,
+                discountedPrice,
+                expirationDate,
+                image
+            ]
+        );
+
+        res.redirect("/products");
+
+    } catch (err) {
+        console.error(err);
+        res.render("products/add", {
+            error: "Error adding product",
+            form: form
+        });
+    }
+});
+
 app.get("/profile", (req, res) => {
     if (!req.session.user) {
         return res.redirect("/auth/login");
@@ -275,7 +361,13 @@ app.get("/market-dashboard", (req, res) => {
         return res.send("Access denied");
     }
 
-    res.send(`Welcome market user: ${req.session.user.email}<br><br><a href="/products">View Products</a>`);
+    res.send(`
+        Welcome market user: ${req.session.user.email}
+        <br><br>
+        <a href="/products">View Products</a>
+        <br>
+        <a href="/market/products/add">Add Product</a>
+    `);
 });
 
 app.get("/auth/logout", (req, res) => {

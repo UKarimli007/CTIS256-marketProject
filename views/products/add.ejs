@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Product</title>
+</head>
+<body>
+
+<h2>Add Product</h2>
+
+<a href="/market-dashboard">Back to Dashboard</a>
+<br><br>
+
+<% if (error) { %>
+    <p style="color:red;"><%= error %></p>
+<% } %>
+
+<form method="POST" action="/market/products/add" enctype="multipart/form-data">
+
+    <label>Title:</label><br>
+    <input type="text" name="title" value="<%= form.title || '' %>" required><br><br>
+
+    <label>Stock:</label><br>
+    <input type="number" name="stock" value="<%= form.stock || '' %>" required><br><br>
+
+    <label>Normal Price:</label><br>
+    <input type="number" step="0.01" name="normal_price" value="<%= form.normal_price || '' %>" required><br><br>
+
+    <label>Discounted Price:</label><br>
+    <input type="number" step="0.01" name="discounted_price" value="<%= form.discounted_price || '' %>" required><br><br>
+
+    <label>Expiration Date:</label><br>
+    <input type="date" name="expiration_date" value="<%= form.expiration_date || '' %>" required><br><br>
+
+    <label>Image:</label><br>
+    <input type="file" name="image"><br><br>
+
+    <button type="submit">Add Product</button>
+
+</form>
+
+</body>
+</html>

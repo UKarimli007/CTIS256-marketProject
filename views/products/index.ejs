@@ -23,6 +23,11 @@
                 </a>
             </h3>
 
+            <% if (product.image) { %>
+                <img src="/uploads/<%= product.image %>" width="150">
+                <br><br>
+            <% } %>
+
             <p><strong>Market:</strong> <%= product.market_name %></p>
             <p><strong>Location:</strong> <%= product.city %> / <%= product.district %></p>
             <p><strong>Stock:</strong> <%= product.stock %></p>
