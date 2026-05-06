@@ -544,15 +544,46 @@ app.post("/market/products/edit/:id", upload.single("image"), async (req, res) =
     }
 });
 
-app.get("/profile", (req, res) => {
+app.get("/profile", async (req, res) => {
     if (!req.session.user) {
         return res.redirect("/auth/login");
     }
 
-    res.send(`Welcome ${req.session.user.email}<br><br><a href="/products">View Products</a>`);
+    try {
+        const [rows] = await db.query(
+            "SELECT * FROM users WHERE id = ?",
+            [req.session.user.id]
+        );
+
+        if (rows.length === 0) {
+            return res.redirect("/auth/login");
+        }
+
+        const userData = rows[0];
+
+        res.send(`
+            Welcome ${req.session.user.email}
+            <br><br>
+            Name: ${userData.role === "consumer" ? userData.full_name : userData.market_name}
+            <br>
+            City: ${userData.city}
+            <br>
+            District: ${userData.district}
+            <br><br>
+            <a href="/profile/edit">Edit Profile</a>
+            <br>
+            <a href="/products">View Products</a>
+            <br>
+            <a href="/cart">Shopping Cart</a>
+        `);
+
+    } catch (err) {
+        console.error(err);
+        res.send("Error loading profile");
+    }
 });
 
-app.get("/market-dashboard", (req, res) => {
+app.get("/market-dashboard", async (req, res) => {
     if (!req.session.user) {
         return res.redirect("/auth/login");
     }
@@ -561,13 +592,104 @@ app.get("/market-dashboard", (req, res) => {
         return res.send("Access denied");
     }
 
-    res.send(`
-        Welcome market user: ${req.session.user.email}
-        <br><br>
-        <a href="/products">View Products</a>
-        <br>
-        <a href="/market/products/add">Add Product</a>
-    `);
+    try {
+        const [rows] = await db.query(
+            "SELECT * FROM users WHERE id = ?",
+            [req.session.user.id]
+        );
+
+        const userData = rows[0];
+
+        res.send(`
+            Welcome market user: ${req.session.user.email}
+            <br><br>
+            Market Name: ${userData.market_name}
+            <br>
+            City: ${userData.city}
+            <br>
+            District: ${userData.district}
+            <br><br>
+            <a href="/profile/edit">Edit Profile</a>
+            <br>
+            <a href="/products">View Products</a>
+            <br>
+            <a href="/market/products/add">Add Product</a>
+        `);
+
+    } catch (err) {
+        console.error(err);
+        res.send("Error loading market dashboard");
+    }
+});
+
+app.get("/profile/edit", async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/auth/login");
+    }
+
+    try {
+        const [rows] = await db.query(
+            "SELECT * FROM users WHERE id = ?",
+            [req.session.user.id]
+        );
+
+        if (rows.length === 0) {
+            return res.redirect("/auth/login");
+        }
+
+        res.render("profile/edit", {
+            userData: rows[0],
+            error: null
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.send("Error loading profile edit page");
+    }
+});
+
+app.post("/profile/edit", async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/auth/login");
+    }
+
+    const name = req.body.name;
+    const city = req.body.city;
+    const district = req.body.district;
+    const userId = req.session.user.id;
+    const role = req.session.user.role;
+
+    try {
+        if (!name || !city || !district) {
+            const [rows] = await db.query(
+                "SELECT * FROM users WHERE id = ?",
+                [userId]
+            );
+
+            return res.render("profile/edit", {
+                userData: rows[0],
+                error: "Please fill in all fields"
+            });
+        }
+
+        if (role === "consumer") {
+            await db.query(
+                "UPDATE users SET full_name = ?, city = ?, district = ? WHERE id = ?",
+                [name, city, district, userId]
+            );
+        } else {
+            await db.query(
+                "UPDATE users SET market_name = ?, city = ?, district = ? WHERE id = ?",
+                [name, city, district, userId]
+            );
+        }
+
+        res.redirect("/profile");
+
+    } catch (err) {
+        console.error(err);
+        res.send("Error updating profile");
+    }
 });
 
 app.get("/auth/logout", (req, res) => {

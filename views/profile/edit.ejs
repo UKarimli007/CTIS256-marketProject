@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Profile</title>
+</head>
+<body>
+
+<h2>Edit Profile</h2>
+
+<a href="/profile">Back to Profile</a>
+<br><br>
+
+<% if (error) { %>
+    <p style="color:red;"><%= error %></p>
+<% } %>
+
+<form method="POST" action="/profile/edit">
+
+    <label>Email:</label><br>
+    <input type="email" value="<%= userData.email %>" disabled><br><br>
+
+    <label>Name:</label><br>
+    <input 
+        type="text" 
+        name="name" 
+        value="<%= userData.role === 'consumer' ? userData.full_name : userData.market_name %>" 
+        required
+    ><br><br>
+
+    <label>City:</label><br>
+    <input type="text" name="city" value="<%= userData.city %>" required><br><br>
+
+    <label>District:</label><br>
+    <input type="text" name="district" value="<%= userData.district %>" required><br><br>
+
+    <button type="submit">Update Profile</button>
+
+</form>
+
+</body>
+</html>
