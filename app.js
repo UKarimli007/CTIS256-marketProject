@@ -344,6 +344,31 @@ app.post("/market/products/add", upload.single("image"), async (req, res) => {
     }
 });
 
+app.post("/market/products/delete/:id", async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/auth/login");
+    }
+
+    if (req.session.user.role !== "market") {
+        return res.send("Access denied");
+    }
+
+    const productId = req.params.id;
+
+    try {
+        await db.query(
+            "DELETE FROM products WHERE id = ? AND market_id = ?",
+            [productId, req.session.user.id]
+        );
+
+        res.redirect("/products");
+
+    } catch (err) {
+        console.error(err);
+        res.send("Error deleting product");
+    }
+});
+
 app.get("/profile", (req, res) => {
     if (!req.session.user) {
         return res.redirect("/auth/login");
