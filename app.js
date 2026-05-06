@@ -561,6 +561,102 @@ app.get("/cart", async (req, res) => {
     }
 });
 
+app.post("/cart/update/:cartId", async (req, res) => {
+    if (!req.session.user || req.session.user.role !== "consumer") {
+        return res.status(401).json({ success: false });
+    }
+
+    const cartId = req.params.cartId;
+    const quantity = parseInt(req.body.quantity);
+    const consumerId = req.session.user.id;
+
+    try {
+        if (quantity < 1) {
+            await db.query(
+                "DELETE FROM cart_items WHERE id = ? AND consumer_id = ?",
+                [cartId, consumerId]
+            );
+        } else {
+            await db.query(
+                "UPDATE cart_items SET quantity = ? WHERE id = ? AND consumer_id = ?",
+                [quantity, cartId, consumerId]
+            );
+        }
+
+        const [items] = await db.query(
+            `SELECT 
+                ci.id AS cart_id,
+                ci.quantity,
+                p.discounted_price,
+                (ci.quantity * p.discounted_price) AS total_price
+             FROM cart_items ci
+             JOIN products p ON ci.product_id = p.id
+             WHERE ci.consumer_id = ?`,
+            [consumerId]
+        );
+
+        let grandTotal = 0;
+
+        items.forEach(item => {
+            grandTotal += Number(item.total_price);
+        });
+
+        const updatedItem = items.find(item => item.cart_id == cartId);
+
+        res.json({
+            success: true,
+            itemTotal: updatedItem ? Number(updatedItem.total_price) : 0,
+            grandTotal: grandTotal
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false });
+    }
+});
+
+app.post("/cart/remove/:cartId", async (req, res) => {
+    if (!req.session.user || req.session.user.role !== "consumer") {
+        return res.status(401).json({ success: false });
+    }
+
+    const cartId = req.params.cartId;
+    const consumerId = req.session.user.id;
+
+    try {
+        await db.query(
+            "DELETE FROM cart_items WHERE id = ? AND consumer_id = ?",
+            [cartId, consumerId]
+        );
+
+        const [items] = await db.query(
+            `SELECT 
+                ci.quantity,
+                p.discounted_price,
+                (ci.quantity * p.discounted_price) AS total_price
+             FROM cart_items ci
+             JOIN products p ON ci.product_id = p.id
+             WHERE ci.consumer_id = ?`,
+            [consumerId]
+        );
+
+        let grandTotal = 0;
+
+        items.forEach(item => {
+            grandTotal += Number(item.total_price);
+        });
+
+        res.json({
+            success: true,
+            grandTotal: grandTotal
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false });
+    }
+});
+
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
 });

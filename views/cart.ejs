@@ -10,6 +10,8 @@
 <a href="/products">Back to Products</a>
 <br><br>
 
+<div id="cart-container">
+
 <% if (cartItems.length === 0) { %>
 
     <p>Your cart is empty.</p>
@@ -18,7 +20,7 @@
 
     <% cartItems.forEach(item => { %>
 
-        <div style="border:1px solid #ccc; padding:15px; margin-bottom:15px;">
+        <div id="cart-item-<%= item.cart_id %>" style="border:1px solid #ccc; padding:15px; margin-bottom:15px;">
 
             <h3><%= item.title %></h3>
 
@@ -28,16 +30,76 @@
             <% } %>
 
             <p>Price: <%= item.discounted_price %> TL</p>
-            <p>Quantity: <%= item.quantity %></p>
-            <p>Total: <%= item.total_price %> TL</p>
+
+            <label>Quantity:</label>
+            <input 
+                type="number" 
+                min="1" 
+                value="<%= item.quantity %>" 
+                id="quantity-<%= item.cart_id %>"
+            >
+
+            <button onclick="updateCart(<%= item.cart_id %>)">Update</button>
+            <button onclick="removeCartItem(<%= item.cart_id %>)">Remove</button>
+
+            <p>
+                Total:
+                <span id="item-total-<%= item.cart_id %>"><%= item.total_price %></span>
+                TL
+            </p>
 
         </div>
 
     <% }) %>
 
-    <h3>Grand Total: <%= grandTotal %> TL</h3>
+    <h3>
+        Grand Total:
+        <span id="grand-total"><%= grandTotal %></span>
+        TL
+    </h3>
 
 <% } %>
+
+</div>
+
+<script>
+async function updateCart(cartId) {
+    const quantity = document.getElementById(`quantity-${cartId}`).value;
+
+    const response = await fetch(`/cart/update/${cartId}`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: `quantity=${quantity}`
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        if (quantity < 1) {
+            document.getElementById(`cart-item-${cartId}`).remove();
+        } else {
+            document.getElementById(`item-total-${cartId}`).textContent = data.itemTotal;
+        }
+
+        document.getElementById("grand-total").textContent = data.grandTotal;
+    }
+}
+
+async function removeCartItem(cartId) {
+    const response = await fetch(`/cart/remove/${cartId}`, {
+        method: "POST"
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        document.getElementById(`cart-item-${cartId}`).remove();
+        document.getElementById("grand-total").textContent = data.grandTotal;
+    }
+}
+</script>
 
 </body>
 </html>
