@@ -227,13 +227,23 @@ app.post("/auth/login", async (req, res) => {
 
 app.get("/products", async (req, res) => {
     try {
-        const [products] = await db.query(
-            `SELECT products.*, users.market_name, users.city, users.district
-             FROM products
-             JOIN users ON products.market_id = users.id
-             WHERE products.expiration_date >= CURDATE()
-             ORDER BY products.expiration_date ASC`
-        );
+        let query = `
+            SELECT products.*, users.market_name, users.city, users.district,
+            CASE 
+                WHEN products.expiration_date < CURDATE() THEN 1
+                ELSE 0
+            END AS is_expired
+            FROM products
+            JOIN users ON products.market_id = users.id
+        `;
+
+        if (!req.session.user || req.session.user.role !== "market") {
+            query += " WHERE products.expiration_date >= CURDATE()";
+        }
+
+        query += " ORDER BY products.expiration_date ASC";
+
+        const [products] = await db.query(query);
 
         res.render("products/index", {
             products: products

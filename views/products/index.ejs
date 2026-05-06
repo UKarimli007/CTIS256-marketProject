@@ -23,6 +23,10 @@
                 </a>
             </h3>
 
+            <% if (product.is_expired === 1) { %>
+                <p style="color:red; font-weight:bold;">EXPIRED PRODUCT</p>
+            <% } %>
+
             <% if (product.image) { %>
                 <img src="/uploads/<%= product.image %>" width="150">
                 <br><br>
@@ -47,11 +51,9 @@
                 <%= product.expiration_date.toISOString().slice(0, 10) %>
             </p>
 
-            <!-- Edit Button -->
             <a href="/market/products/edit/<%= product.id %>">Edit</a>
             <br><br>
 
-            <!-- Delete Button -->
             <form method="POST" action="/market/products/delete/<%= product.id %>">
                 <button type="submit">Delete</button>
             </form>
