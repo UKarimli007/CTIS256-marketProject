@@ -10,6 +10,8 @@
 <a href="/products">Back to Products</a>
 <br><br>
 
+<p id="purchase-message"></p>
+
 <div id="cart-container">
 
 <% if (cartItems.length === 0) { %>
@@ -58,6 +60,9 @@
         TL
     </h3>
 
+    <br>
+    <button onclick="purchaseCart()">Purchase</button>
+
 <% } %>
 
 </div>
@@ -97,6 +102,21 @@ async function removeCartItem(cartId) {
     if (data.success) {
         document.getElementById(`cart-item-${cartId}`).remove();
         document.getElementById("grand-total").textContent = data.grandTotal;
+    }
+}
+
+async function purchaseCart() {
+    const response = await fetch("/cart/purchase", {
+        method: "POST"
+    });
+
+    const data = await response.json();
+
+    if (data.success) {
+        document.getElementById("cart-container").innerHTML = "<p>Your cart is empty.</p>";
+        document.getElementById("purchase-message").textContent = data.message;
+    } else {
+        document.getElementById("purchase-message").textContent = data.message || "Purchase failed";
     }
 }
 </script>

@@ -657,6 +657,49 @@ app.post("/cart/remove/:cartId", async (req, res) => {
     }
 });
 
+app.post("/cart/purchase", async (req, res) => {
+    if (!req.session.user || req.session.user.role !== "consumer") {
+        return res.status(401).json({ success: false });
+    }
+
+    const consumerId = req.session.user.id;
+
+    try {
+        const [cartItems] = await db.query(
+            "SELECT product_id FROM cart_items WHERE consumer_id = ?",
+            [consumerId]
+        );
+
+        if (cartItems.length === 0) {
+            return res.json({
+                success: false,
+                message: "Cart is empty"
+            });
+        }
+
+        const productIds = cartItems.map(item => item.product_id);
+
+        await db.query(
+            "DELETE FROM products WHERE id IN (?)",
+            [productIds]
+        );
+
+        await db.query(
+            "DELETE FROM cart_items WHERE consumer_id = ?",
+            [consumerId]
+        );
+
+        res.json({
+            success: true,
+            message: "Purchase completed successfully"
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ success: false });
+    }
+});
+
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
 });
