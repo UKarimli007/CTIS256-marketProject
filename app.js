@@ -227,27 +227,105 @@ app.post("/auth/login", async (req, res) => {
 
 app.get("/products", async (req, res) => {
     try {
-        let query = `
-            SELECT products.*, users.market_name, users.city, users.district,
-            CASE 
-                WHEN products.expiration_date < CURDATE() THEN 1
-                ELSE 0
-            END AS is_expired
-            FROM products
-            JOIN users ON products.market_id = users.id
-        `;
+        const user = req.session.user;
+        const search = req.query.search || "";
+        const page = parseInt(req.query.page) || 1;
+        const limit = 4;
+        const offset = (page - 1) * limit;
 
-        if (!req.session.user || req.session.user.role !== "market") {
-            query += " WHERE products.expiration_date >= CURDATE()";
+        let products = [];
+        let totalProducts = 0;
+
+        if (user && user.role === "consumer") {
+            const [consumerRows] = await db.query(
+                "SELECT city, district FROM users WHERE id = ?",
+                [user.id]
+            );
+
+            if (consumerRows.length === 0) {
+                return res.redirect("/auth/login");
+            }
+
+            const consumerCity = consumerRows[0].city;
+            const consumerDistrict = consumerRows[0].district;
+
+            const [countRows] = await db.query(
+                `SELECT COUNT(*) AS total
+                 FROM products
+                 JOIN users ON products.market_id = users.id
+                 WHERE products.expiration_date >= CURDATE()
+                 AND users.city = ?
+                 AND products.title LIKE ?`,
+                [consumerCity, `%${search}%`]
+            );
+
+            totalProducts = countRows[0].total;
+
+            const [rows] = await db.query(
+                `SELECT products.*, users.market_name, users.city, users.district,
+                 0 AS is_expired
+                 FROM products
+                 JOIN users ON products.market_id = users.id
+                 WHERE products.expiration_date >= CURDATE()
+                 AND users.city = ?
+                 AND products.title LIKE ?
+                 ORDER BY 
+                    CASE 
+                        WHEN users.district = ? THEN 0
+                        ELSE 1
+                    END,
+                    products.expiration_date ASC
+                 LIMIT ? OFFSET ?`,
+                [consumerCity, `%${search}%`, consumerDistrict, limit, offset]
+            );
+
+            products = rows;
+
+        } else {
+            let countQuery = `
+                SELECT COUNT(*) AS total
+                FROM products
+                JOIN users ON products.market_id = users.id
+            `;
+
+            let query = `
+                SELECT products.*, users.market_name, users.city, users.district,
+                CASE 
+                    WHEN products.expiration_date < CURDATE() THEN 1
+                    ELSE 0
+                END AS is_expired
+                FROM products
+                JOIN users ON products.market_id = users.id
+            `;
+
+            const params = [];
+            const countParams = [];
+
+            if (!user || user.role !== "market") {
+                countQuery += " WHERE products.expiration_date >= CURDATE()";
+                query += " WHERE products.expiration_date >= CURDATE()";
+            }
+
+            countQuery += " ORDER BY products.expiration_date ASC";
+            query += " ORDER BY products.expiration_date ASC LIMIT ? OFFSET ?";
+
+            params.push(limit, offset);
+
+            const [countRows] = await db.query(countQuery, countParams);
+            totalProducts = countRows[0].total;
+
+            const [rows] = await db.query(query, params);
+            products = rows;
         }
 
-        query += " ORDER BY products.expiration_date ASC";
-
-        const [products] = await db.query(query);
+        const totalPages = Math.ceil(totalProducts / limit);
 
         res.render("products/index", {
             products: products,
-            user: req.session.user
+            user: user,
+            search: search,
+            page: page,
+            totalPages: totalPages
         });
 
     } catch (err) {

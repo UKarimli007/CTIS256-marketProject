@@ -10,6 +10,13 @@
 <a href="/profile">Back to Profile</a>
 <br><br>
 
+<form method="GET" action="/products">
+    <input type="text" name="search" placeholder="Search products" value="<%= typeof search !== 'undefined' ? search : '' %>">
+    <button type="submit">Search</button>
+</form>
+
+<br>
+
 <% if (products.length === 0) { %>
     <p>No products found.</p>
 <% } else { %>
@@ -70,6 +77,20 @@
         </div>
     <% }) %>
 
+<% } %>
+
+<% if (typeof totalPages !== "undefined" && totalPages > 1) { %>
+    <div>
+        <% if (page > 1) { %>
+            <a href="/products?search=<%= search %>&page=<%= page - 1 %>">Previous</a>
+        <% } %>
+
+        <span> Page <%= page %> of <%= totalPages %> </span>
+
+        <% if (page < totalPages) { %>
+            <a href="/products?search=<%= search %>&page=<%= page + 1 %>">Next</a>
+        <% } %>
+    </div>
 <% } %>
 
 </body>
