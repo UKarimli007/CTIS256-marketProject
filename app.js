@@ -246,7 +246,8 @@ app.get("/products", async (req, res) => {
         const [products] = await db.query(query);
 
         res.render("products/index", {
-            products: products
+            products: products,
+            user: req.session.user
         });
 
     } catch (err) {
@@ -272,7 +273,8 @@ app.get("/products/:id", async (req, res) => {
         }
 
         res.render("products/detail", {
-            product: rows[0]
+            product: rows[0],
+            user: req.session.user
         });
 
     } catch (err) {

@@ -36,8 +36,14 @@
 
     <p>
         <strong>Expiration Date:</strong>
-        <%= product.expiration_date.toISOString().slice(0,10) %>
+        <%= product.expiration_date.toISOString().slice(0, 10) %>
     </p>
+
+    <% if (typeof user !== "undefined" && user && user.role === "consumer") { %>
+        <form method="POST" action="/cart/add/<%= product.id %>">
+            <button type="submit">Add to Cart</button>
+        </form>
+    <% } %>
 
 </div>
 

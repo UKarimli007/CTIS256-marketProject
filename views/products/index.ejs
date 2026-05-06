@@ -51,12 +51,21 @@
                 <%= product.expiration_date.toISOString().slice(0, 10) %>
             </p>
 
-            <a href="/market/products/edit/<%= product.id %>">Edit</a>
-            <br><br>
+            <% if (typeof user !== "undefined" && user && user.role === "consumer") { %>
+                <form method="POST" action="/cart/add/<%= product.id %>">
+                    <button type="submit">Add to Cart</button>
+                </form>
+                <br>
+            <% } %>
 
-            <form method="POST" action="/market/products/delete/<%= product.id %>">
-                <button type="submit">Delete</button>
-            </form>
+            <% if (typeof user !== "undefined" && user && user.role === "market") { %>
+                <a href="/market/products/edit/<%= product.id %>">Edit</a>
+                <br><br>
+
+                <form method="POST" action="/market/products/delete/<%= product.id %>">
+                    <button type="submit">Delete</button>
+                </form>
+            <% } %>
 
         </div>
     <% }) %>
