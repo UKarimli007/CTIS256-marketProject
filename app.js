@@ -369,6 +369,91 @@ app.post("/market/products/delete/:id", async (req, res) => {
     }
 });
 
+app.get("/market/products/edit/:id", async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/auth/login");
+    }
+
+    if (req.session.user.role !== "market") {
+        return res.send("Access denied");
+    }
+
+    const productId = req.params.id;
+
+    try {
+        const [rows] = await db.query(
+            "SELECT * FROM products WHERE id = ? AND market_id = ?",
+            [productId, req.session.user.id]
+        );
+
+        if (rows.length === 0) {
+            return res.send("Product not found or access denied");
+        }
+
+        res.render("products/edit", {
+            product: rows[0],
+            error: null
+        });
+
+    } catch (err) {
+        console.error(err);
+        res.send("Error loading edit page");
+    }
+});
+
+app.post("/market/products/edit/:id", upload.single("image"), async (req, res) => {
+    if (!req.session.user) {
+        return res.redirect("/auth/login");
+    }
+
+    if (req.session.user.role !== "market") {
+        return res.send("Access denied");
+    }
+
+    const productId = req.params.id;
+    const title = req.body.title;
+    const stock = req.body.stock;
+    const normalPrice = req.body.normal_price;
+    const discountedPrice = req.body.discounted_price;
+    const expirationDate = req.body.expiration_date;
+
+    try {
+        if (!title || !stock || !normalPrice || !discountedPrice || !expirationDate) {
+            const [rows] = await db.query(
+                "SELECT * FROM products WHERE id = ? AND market_id = ?",
+                [productId, req.session.user.id]
+            );
+
+            return res.render("products/edit", {
+                product: rows[0],
+                error: "Please fill in all required fields"
+            });
+        }
+
+        if (req.file) {
+            await db.query(
+                `UPDATE products
+                 SET title = ?, stock = ?, normal_price = ?, discounted_price = ?, expiration_date = ?, image = ?
+                 WHERE id = ? AND market_id = ?`,
+                [title, stock, normalPrice, discountedPrice, expirationDate, req.file.filename, productId, req.session.user.id]
+            );
+        } else {
+            await db.query(
+                `UPDATE products
+                 SET title = ?, stock = ?, normal_price = ?, discounted_price = ?, expiration_date = ?
+                 WHERE id = ? AND market_id = ?`,
+                [title, stock, normalPrice, discountedPrice, expirationDate, productId, req.session.user.id]
+            );
+        }
+
+        res.redirect("/products");
+
+    } catch (err) {
+        console.error(err);
+        res.send("Error updating product");
+    }
+});
+
 app.get("/profile", (req, res) => {
     if (!req.session.user) {
         return res.redirect("/auth/login");

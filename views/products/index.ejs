@@ -47,6 +47,11 @@
                 <%= product.expiration_date.toISOString().slice(0, 10) %>
             </p>
 
+            <!-- Edit Button -->
+            <a href="/market/products/edit/<%= product.id %>">Edit</a>
+            <br><br>
+
+            <!-- Delete Button -->
             <form method="POST" action="/market/products/delete/<%= product.id %>">
                 <button type="submit">Delete</button>
             </form>

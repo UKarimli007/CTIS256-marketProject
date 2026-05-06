@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Product</title>
+</head>
+<body>
+
+<h2>Edit Product</h2>
+
+<a href="/products">Back to Products</a>
+<br><br>
+
+<% if (error) { %>
+    <p style="color:red;"><%= error %></p>
+<% } %>
+
+<form method="POST" action="/market/products/edit/<%= product.id %>" enctype="multipart/form-data">
+
+    <label>Title:</label><br>
+    <input type="text" name="title" value="<%= product.title %>" required><br><br>
+
+    <label>Stock:</label><br>
+    <input type="number" name="stock" value="<%= product.stock %>" required><br><br>
+
+    <label>Normal Price:</label><br>
+    <input type="number" step="0.01" name="normal_price" value="<%= product.normal_price %>" required><br><br>
+
+    <label>Discounted Price:</label><br>
+    <input type="number" step="0.01" name="discounted_price" value="<%= product.discounted_price %>" required><br><br>
+
+    <label>Expiration Date:</label><br>
+    <input type="date" name="expiration_date" value="<%= product.expiration_date.toISOString().slice(0, 10) %>" required><br><br>
+
+    <% if (product.image) { %>
+        <p>Current Image:</p>
+        <img src="/uploads/<%= product.image %>" width="150"><br><br>
+    <% } %>
+
+    <label>New Image:</label><br>
+    <input type="file" name="image"><br><br>
+
+    <button type="submit">Update Product</button>
+
+</form>
+
+</body>
+</html>
