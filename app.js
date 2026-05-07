@@ -563,21 +563,7 @@ app.get("/profile", async (req, res) => {
 
         const userData = rows[0];
 
-        res.send(`
-            Welcome ${req.session.user.email}
-            <br><br>
-            Name: ${userData.role === "consumer" ? userData.full_name : userData.market_name}
-            <br>
-            City: ${userData.city}
-            <br>
-            District: ${userData.district}
-            <br><br>
-            <a href="/profile/edit">Edit Profile</a>
-            <br>
-            <a href="/products">View Products</a>
-            <br>
-            <a href="/cart">Shopping Cart</a>
-        `);
+        res.render("profile/index", { userData });
 
     } catch (err) {
         console.error(err);
@@ -602,21 +588,7 @@ app.get("/market-dashboard", async (req, res) => {
 
         const userData = rows[0];
 
-        res.send(`
-            Welcome market user: ${req.session.user.email}
-            <br><br>
-            Market Name: ${userData.market_name}
-            <br>
-            City: ${userData.city}
-            <br>
-            District: ${userData.district}
-            <br><br>
-            <a href="/profile/edit">Edit Profile</a>
-            <br>
-            <a href="/products">View Products</a>
-            <br>
-            <a href="/market/products/add">Add Product</a>
-        `);
+        res.render("market/dashboard", { userData });
 
     } catch (err) {
         console.error(err);

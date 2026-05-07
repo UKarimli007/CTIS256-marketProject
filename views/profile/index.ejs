@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Profile</title>
+</head>
+<body>
+
+<h2>Profile</h2>
+
+<div>
+    <p><strong>Email:</strong> <%= userData.email %></p>
+    <p><strong>Name:</strong> <%= userData.role === 'consumer' ? userData.full_name : userData.market_name %></p>
+    <p><strong>City:</strong> <%= userData.city %></p>
+    <p><strong>District:</strong> <%= userData.district %></p>
+</div>
+
+<div>
+    <a href="/profile/edit">Edit Profile</a>
+    <a href="/products">View Products</a>
+    <a href="/cart">Shopping Cart</a>
+    <a href="/auth/logout">Logout</a>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Market Dashboard</title>
+</head>
+<body>
+
+<h2>Market Dashboard</h2>
+
+<div>
+    <p><strong>Email:</strong> <%= userData.email %></p>
+    <p><strong>Market Name:</strong> <%= userData.market_name %></p>
+    <p><strong>City:</strong> <%= userData.city %></p>
+    <p><strong>District:</strong> <%= userData.district %></p>
+</div>
+
+<div>
+    <a href="/profile/edit">Edit Profile</a>
+    <a href="/products">View Products</a>
+    <a href="/market/products/add">Add Product</a>
+    <a href="/auth/logout">Logout</a>
+</div>
+
+</body>
+</html>
