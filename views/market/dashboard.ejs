@@ -2,23 +2,24 @@
 <html>
 <head>
     <title>Market Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
 <h2>Market Dashboard</h2>
 
-<div>
+<div class="info-box">
     <p><strong>Email:</strong> <%= userData.email %></p>
     <p><strong>Market Name:</strong> <%= userData.market_name %></p>
     <p><strong>City:</strong> <%= userData.city %></p>
     <p><strong>District:</strong> <%= userData.district %></p>
 </div>
 
-<div>
-    <a href="/profile/edit">Edit Profile</a>
-    <a href="/products">View Products</a>
-    <a href="/market/products/add">Add Product</a>
-    <a href="/auth/logout">Logout</a>
+<div class="actions">
+    <a href="/profile/edit" class="btn">Edit Profile</a>
+    <a href="/products" class="btn">View Products</a>
+    <a href="/market/products/add" class="btn">Add Product</a>
+    <a href="/auth/logout" class="btn btn-danger">Logout</a>
 </div>
 
 </body>

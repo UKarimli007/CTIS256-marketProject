@@ -2,12 +2,13 @@
 <html>
 <head>
     <title>Products</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
 
 <h2>Available Discount Products</h2>
 
-<a href="/profile">Back to Profile</a>
+<a href="/profile" class="btn btn-outline">Back to Profile</a>
 <br><br>
 
 <form method="GET" action="/products">
@@ -22,7 +23,7 @@
 <% } else { %>
 
     <% products.forEach(product => { %>
-        <div style="border:1px solid #ccc; padding:15px; margin-bottom:15px;">
+        <div class="card">
 
             <h3>
                 <a href="/products/<%= product.id %>">
@@ -82,13 +83,13 @@
 <% if (typeof totalPages !== "undefined" && totalPages > 1) { %>
     <div>
         <% if (page > 1) { %>
-            <a href="/products?search=<%= search %>&page=<%= page - 1 %>">Previous</a>
+            <a href="/products?search=<%= search %>&page=<%= page - 1 %>" class="btn btn-outline">Previous</a>
         <% } %>
 
         <span> Page <%= page %> of <%= totalPages %> </span>
 
         <% if (page < totalPages) { %>
-            <a href="/products?search=<%= search %>&page=<%= page + 1 %>">Next</a>
+            <a href="/products?search=<%= search %>&page=<%= page + 1 %>" class="btn btn-outline">Next</a>
         <% } %>
     </div>
 <% } %>
