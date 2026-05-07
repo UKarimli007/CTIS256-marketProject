@@ -33,12 +33,14 @@ app.use(session({
 app.set("view engine", "ejs");
 
 const transporter = nodemailer.createTransport({
-    service: "gmail",
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS
     }
 });
+
 
 app.get("/test-db", async (req, res) => {
     try {
@@ -111,7 +113,7 @@ app.post("/auth/register", async (req, res) => {
         );
 
         await transporter.sendMail({
-            from: process.env.EMAIL_USER,
+            from: "nihad.jafarov06@gmail.com",
             to: email,
             subject: "Email Verification Code",
             text: `Your verification code is: ${code}`
@@ -707,7 +709,7 @@ app.post("/cart/add/:productId", async (req, res) => {
     const productId = req.params.productId;
 
     try {
-        await pool.query(
+        await db.query(
             `INSERT INTO cart_items (consumer_id, product_id, quantity)
              VALUES (?, ?, 1)
              ON DUPLICATE KEY UPDATE quantity = quantity + 1`,
@@ -729,7 +731,7 @@ app.get("/cart", async (req, res) => {
     const consumerId = req.session.user.id;
 
     try {
-        const [cartItems] = await pool.query(
+        const [cartItems] = await db.query(
             `SELECT 
                 ci.id AS cart_id,
                 ci.quantity,
