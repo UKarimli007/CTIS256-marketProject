@@ -4,12 +4,13 @@
     <title>Edit Profile</title>
     <script>
         function validateForm() {
-            const name = document.forms["editForm"]["name"].value;
-            const city = document.forms["editForm"]["city"].value;
-            const district = document.forms["editForm"]["district"].value;
+            const error = document.getElementById("val-error");
+            const name = document.forms["editForm"]["name"].value.trim();
+            const city = document.forms["editForm"]["city"].value.trim();
+            const district = document.forms["editForm"]["district"].value.trim();
 
             if (!name || !city || !district) {
-                alert("All fields must be filled out");
+                error.textContent = "All fields must be filled out";
                 return false;
             }
             return true;
@@ -46,6 +47,7 @@
     <label>District:</label><br>
     <input type="text" name="district" value="<%= userData.district %>" required><br><br>
 
+    <p id="val-error" style="color:red;"></p>
     <button type="submit">Update Profile</button>
 
 </form>

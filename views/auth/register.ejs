@@ -11,7 +11,7 @@
     <p style="color:red;"><%= error %></p>
 <% } %>
 
-<form method="POST" action="/auth/register">
+<form method="POST" action="/auth/register" onsubmit="return validateForm()">
 
     <label>Role:</label><br>
     <select name="role" required>
@@ -34,9 +34,31 @@
     <label>District:</label><br>
     <input type="text" name="district" value="<%= typeof form !== 'undefined' ? form.district : '' %>" required><br><br>
 
+    <p id="val-error" style="color:red;"></p>
     <button type="submit">Register</button>
 
 </form>
+
+<script>
+function validateForm() {
+    const error = document.getElementById("val-error");
+    const name = document.querySelector('[name="name"]').value.trim();
+    const email = document.querySelector('[name="email"]').value.trim();
+    const password = document.querySelector('[name="password"]').value;
+    const city = document.querySelector('[name="city"]').value.trim();
+    const district = document.querySelector('[name="district"]').value.trim();
+
+    if (!name || !email || !password || !city || !district) {
+        error.textContent = "Please fill in all fields";
+        return false;
+    }
+    if (password.length < 4) {
+        error.textContent = "Password must be at least 4 characters";
+        return false;
+    }
+    return true;
+}
+</script>
 
 </body>
 </html>

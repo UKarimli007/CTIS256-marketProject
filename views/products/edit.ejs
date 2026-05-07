@@ -14,7 +14,7 @@
     <p style="color:red;"><%= error %></p>
 <% } %>
 
-<form method="POST" action="/market/products/edit/<%= product.id %>" enctype="multipart/form-data">
+<form method="POST" action="/market/products/edit/<%= product.id %>" enctype="multipart/form-data" onsubmit="return validateForm()">
 
     <label>Title:</label><br>
     <input type="text" name="title" value="<%= product.title %>" required><br><br>
@@ -39,9 +39,31 @@
     <label>New Image:</label><br>
     <input type="file" name="image"><br><br>
 
+    <p id="val-error" style="color:red;"></p>
     <button type="submit">Update Product</button>
 
 </form>
+
+<script>
+function validateForm() {
+    const error = document.getElementById("val-error");
+    const title = document.querySelector('[name="title"]').value.trim();
+    const stock = document.querySelector('[name="stock"]').value;
+    const normalPrice = parseFloat(document.querySelector('[name="normal_price"]').value);
+    const discountedPrice = parseFloat(document.querySelector('[name="discounted_price"]').value);
+    const expirationDate = document.querySelector('[name="expiration_date"]').value;
+
+    if (!title || !stock || !normalPrice || !expirationDate) {
+        error.textContent = "Please fill in all required fields";
+        return false;
+    }
+    if (discountedPrice >= normalPrice) {
+        error.textContent = "Discounted price must be less than normal price";
+        return false;
+    }
+    return true;
+}
+</script>
 
 </body>
 </html>
