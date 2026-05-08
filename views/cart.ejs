@@ -70,7 +70,9 @@
 
 <script>
 async function updateCart(cartId) {
-    const quantity = document.getElementById(`quantity-${cartId}`).value;
+    const input = document.getElementById(`quantity-${cartId}`);
+    const quantity = input.value;
+    const previousValue = input.defaultValue;
 
     const response = await fetch(`/cart/update/${cartId}`, {
         method: "POST",
@@ -90,6 +92,11 @@ async function updateCart(cartId) {
         }
 
         document.getElementById("grand-total").textContent = data.grandTotal;
+        document.getElementById("purchase-message").textContent = "";
+    } else {
+        input.value = previousValue;
+        document.getElementById("purchase-message").style.color = "red";
+        document.getElementById("purchase-message").textContent = data.message || "Update failed";
     }
 }
 

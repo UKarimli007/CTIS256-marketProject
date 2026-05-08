@@ -656,6 +656,26 @@ app.post("/cart/add/:productId", async (req, res) => {
     const productId = req.params.productId;
 
     try {
+        const [productRows] = await db.query(
+            "SELECT stock FROM products WHERE id = ?",
+            [productId]
+        );
+
+        if (productRows.length === 0) {
+            return res.send("Product not found");
+        }
+
+        const [cartRows] = await db.query(
+            "SELECT quantity FROM cart_items WHERE consumer_id = ? AND product_id = ?",
+            [consumerId, productId]
+        );
+
+        const currentQty = cartRows.length > 0 ? cartRows[0].quantity : 0;
+
+        if (currentQty + 1 > productRows[0].stock) {
+            return res.redirect("/cart");
+        }
+
         await db.query(
             `INSERT INTO cart_items (consumer_id, product_id, quantity)
              VALUES (?, ?, 1)
@@ -726,6 +746,22 @@ app.post("/cart/update/:cartId", async (req, res) => {
                 [cartId, consumerId]
             );
         } else {
+            const [cartRows] = await db.query(
+                "SELECT product_id FROM cart_items WHERE id = ? AND consumer_id = ?",
+                [cartId, consumerId]
+            );
+
+            if (cartRows.length > 0) {
+                const [productRows] = await db.query(
+                    "SELECT stock FROM products WHERE id = ?",
+                    [cartRows[0].product_id]
+                );
+
+                if (productRows.length > 0 && quantity > productRows[0].stock) {
+                    return res.json({ success: false, message: "Not enough stock" });
+                }
+            }
+
             await db.query(
                 "UPDATE cart_items SET quantity = ? WHERE id = ? AND consumer_id = ?",
                 [quantity, cartId, consumerId]
