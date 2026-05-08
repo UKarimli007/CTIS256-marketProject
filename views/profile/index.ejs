@@ -21,6 +21,9 @@
     <% if (userData.role === 'consumer') { %>
         <a href="/cart" class="btn">Shopping Cart</a>
     <% } %>
+    <% if (userData.role === 'market') { %>
+        <a href="/market/products/add" class="btn">Add Product</a>
+    <% } %>
     <a href="/auth/logout" class="btn btn-danger">Logout</a>
 </div>
 
