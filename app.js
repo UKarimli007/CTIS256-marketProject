@@ -815,7 +815,7 @@ app.post("/cart/purchase", async (req, res) => {
 
     try {
         const [cartItems] = await db.query(
-            "SELECT product_id FROM cart_items WHERE consumer_id = ?",
+            "SELECT product_id, quantity FROM cart_items WHERE consumer_id = ?",
             [consumerId]
         );
 
@@ -826,12 +826,16 @@ app.post("/cart/purchase", async (req, res) => {
             });
         }
 
-        const productIds = cartItems.map(item => item.product_id);
-
-        await db.query(
-            "DELETE FROM products WHERE id IN (?)",
-            [productIds]
-        );
+        for (const item of cartItems) {
+            await db.query(
+                "UPDATE products SET stock = stock - ? WHERE id = ?",
+                [item.quantity, item.product_id]
+            );
+            await db.query(
+                "DELETE FROM products WHERE id = ? AND stock <= 0",
+                [item.product_id]
+            );
+        }
 
         await db.query(
             "DELETE FROM cart_items WHERE consumer_id = ?",
