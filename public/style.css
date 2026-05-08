@@ -11,6 +11,35 @@ body {
     color: #333;
 }
 
+.auth-wrapper {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-box {
+    background: #fff;
+    border: 1px solid #dde3ec;
+    border-radius: 6px;
+    padding: 40px 36px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+.auth-box h2 {
+    text-align: center;
+    margin-bottom: 28px;
+    border-bottom: none;
+}
+
+.auth-box p {
+    text-align: center;
+    margin-top: 16px;
+    font-size: 14px;
+}
+
 h2 {
     margin-bottom: 20px;
     font-size: 24px;

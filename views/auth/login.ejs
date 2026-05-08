@@ -6,6 +6,9 @@
 </head>
 <body>
 
+<div class="auth-wrapper">
+<div class="auth-box">
+
 <h2>Login</h2>
 
 <form method="POST" action="/auth/login" onsubmit="return validateForm()">
@@ -16,8 +19,13 @@
     <input type="password" name="password" required><br><br>
 
     <p id="val-error" style="color:red;"></p>
-    <button type="submit">Login</button>
+    <button type="submit" style="width:100%;">Login</button>
 </form>
+
+<p>Don't have an account? <a href="/auth/register">Register</a></p>
+
+</div>
+</div>
 
 <script>
 function validateForm() {

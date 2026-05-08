@@ -6,6 +6,9 @@
 </head>
 <body>
 
+<div class="auth-wrapper">
+<div class="auth-box">
+
 <h2>Register</h2>
 
 <% if (typeof error !== 'undefined') { %>
@@ -36,9 +39,14 @@
     <input type="text" name="district" value="<%= typeof form !== 'undefined' ? form.district : '' %>" required><br><br>
 
     <p id="val-error" style="color:red;"></p>
-    <button type="submit">Register</button>
+    <button type="submit" style="width:100%;">Register</button>
 
 </form>
+
+<p>Already have an account? <a href="/auth/login">Login</a></p>
+
+</div>
+</div>
 
 <script>
 function validateForm() {

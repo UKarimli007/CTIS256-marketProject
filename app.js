@@ -874,6 +874,10 @@ app.post("/cart/purchase", async (req, res) => {
     }
 });
 
+app.get("/", (req, res) => {
+    res.redirect("/auth/login");
+});
+
 app.listen(3000, () => {
     console.log("Server running on http://localhost:3000");
 });
