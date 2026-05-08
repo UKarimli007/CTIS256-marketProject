@@ -35,9 +35,11 @@
         <%= product.discounted_price %> TL
     </p>
 
+    <% const daysLeft = Math.round((new Date(product.expiration_date) - new Date()) / 86400000); %>
     <p>
         <strong>Expiration Date:</strong>
         <%= product.expiration_date.toISOString().slice(0, 10) %>
+        (<%= daysLeft %> days left)
     </p>
 
     <% if (typeof user !== "undefined" && user && user.role === "consumer") { %>

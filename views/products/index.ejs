@@ -3,6 +3,59 @@
 <head>
     <title>Products</title>
     <link rel="stylesheet" href="/style.css">
+    <style>
+        .product-card {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            background: #fff;
+            border: 1px solid #dde3ec;
+            border-radius: 4px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+        }
+        .product-info {
+            flex: 1;
+        }
+        .product-info h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+        .product-info p {
+            font-size: 15px;
+            margin-bottom: 8px;
+        }
+        .product-image {
+            width: 200px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            align-self: center;
+        }
+        .product-image img {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .no-image {
+            width: 200px;
+            height: 200px;
+            background: #f0f2f5;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+            font-size: 13px;
+        }
+        .days-left {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
 </head>
 <body>
 
@@ -23,57 +76,65 @@
 <% } else { %>
 
     <% products.forEach(product => { %>
-        <div class="card">
+        <% const daysLeft = Math.round((new Date(product.expiration_date) - new Date()) / 86400000); %>
+        <div class="product-card">
 
-            <h3>
-                <a href="/products/<%= product.id %>">
-                    <%= product.title %>
-                </a>
-            </h3>
+            <div class="product-info">
 
-            <% if (product.is_expired === 1) { %>
-                <p style="color:red; font-weight:bold;">EXPIRED PRODUCT</p>
-            <% } %>
+                <h3>
+                    <a href="/products/<%= product.id %>">
+                        <%= product.title %>
+                    </a>
+                </h3>
 
-            <% if (product.image) { %>
-                <img src="/uploads/<%= product.image %>" width="150">
-                <br><br>
-            <% } %>
+                <% if (product.is_expired === 1) { %>
+                    <p style="color:red; font-weight:bold;">EXPIRED PRODUCT</p>
+                <% } %>
 
-            <p><strong>Market:</strong> <%= product.market_name %></p>
-            <p><strong>Location:</strong> <%= product.city %> / <%= product.district %></p>
-            <p><strong>Stock:</strong> <%= product.stock %></p>
+                <p><strong>Market:</strong> <%= product.market_name %></p>
+                <p><strong>Location:</strong> <%= product.city %> / <%= product.district %></p>
+                <p><strong>Stock:</strong> <%= product.stock %></p>
 
-            <p>
-                <strong>Normal Price:</strong>
-                <del><%= product.normal_price %> TL</del>
-            </p>
+                <p>
+                    <strong>Normal Price:</strong>
+                    <del><%= product.normal_price %> TL</del>
+                </p>
 
-            <p>
-                <strong>Discounted Price:</strong>
-                <%= product.discounted_price %> TL
-            </p>
+                <p>
+                    <strong>Discounted Price:</strong>
+                    <%= product.discounted_price %> TL
+                </p>
 
-            <p>
-                <strong>Expiration Date:</strong>
-                <%= product.expiration_date.toISOString().slice(0, 10) %>
-            </p>
+                <p>
+                    <strong>Expiration Date:</strong>
+                    <%= product.expiration_date.toISOString().slice(0, 10) %>
+                    <span class="days-left">(<%= daysLeft %> days left)</span>
+                </p>
 
-            <% if (typeof user !== "undefined" && user && user.role === "consumer") { %>
-                <form method="POST" action="/cart/add/<%= product.id %>">
-                    <button type="submit">Add to Cart</button>
-                </form>
-                <br>
-            <% } %>
+                <% if (typeof user !== "undefined" && user && user.role === "consumer") { %>
+                    <form method="POST" action="/cart/add/<%= product.id %>">
+                        <button type="submit">Add to Cart</button>
+                    </form>
+                <% } %>
 
-            <% if (typeof user !== "undefined" && user && user.role === "market") { %>
-                <a href="/market/products/edit/<%= product.id %>">Edit</a>
-                <br><br>
+                <% if (typeof user !== "undefined" && user && user.role === "market") { %>
+                    <div class="actions">
+                        <a href="/market/products/edit/<%= product.id %>" class="btn">Edit</a>
+                        <form method="POST" action="/market/products/delete/<%= product.id %>">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </div>
+                <% } %>
 
-                <form method="POST" action="/market/products/delete/<%= product.id %>">
-                    <button type="submit">Delete</button>
-                </form>
-            <% } %>
+            </div>
+
+            <div class="product-image">
+                <% if (product.image) { %>
+                    <img src="/uploads/<%= product.image %>" alt="<%= product.title %>">
+                <% } else { %>
+                    <div class="no-image">No image</div>
+                <% } %>
+            </div>
 
         </div>
     <% }) %>

@@ -6,7 +6,7 @@
 </head>
 <body>
 
-<h2>Profile</h2>
+<h2>My Profile</h2>
 
 <div class="info-box">
     <p><strong>Email:</strong> <%= userData.email %></p>
@@ -18,7 +18,9 @@
 <div class="actions">
     <a href="/profile/edit" class="btn">Edit Profile</a>
     <a href="/products" class="btn">View Products</a>
-    <a href="/cart" class="btn">Shopping Cart</a>
+    <% if (userData.role === 'consumer') { %>
+        <a href="/cart" class="btn">Shopping Cart</a>
+    <% } %>
     <a href="/auth/logout" class="btn btn-danger">Logout</a>
 </div>
 
